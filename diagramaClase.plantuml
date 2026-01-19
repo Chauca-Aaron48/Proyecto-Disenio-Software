@@ -1,0 +1,186 @@
+@startuml DiagramaDeClases_SGAI_DICC
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam monochrome true
+skinparam shadowing false
+
+title Arquitectura de Software SGAI-DICC (Modular y Orientada a Objetos)
+
+' --- ENUMS (Tipificación Fuerte) ---
+
+' --- MÓDULO 1: SEGURIDAD Y ACCESO (Usuarios) ---
+package "Módulo 1: Seguridad y Actores" {
+    enum RolUsuario {
+        DIRECTOR_PROYECTO
+        JEFA_DEPARTAMENTO
+        ADMINISTRADOR
+    }
+
+    class "Usuario" as Usuario {
+        - String idUsuario
+        - String password
+        - String correoInstitucional
+        - RolUsuario rol
+        --
+        + login() : boolean
+        + tienePermiso(accion: String) : boolean
+    }
+
+    class "Docente" as Docente {
+        - String cedula
+        - String nombres
+        - String tituloAcademico
+        --
+        + listarMisProyectos() : List<Proyecto>
+    }
+
+    ' Herencia: El Docente es un Usuario del sistema
+    Usuario <|-- Docente
+}
+
+' --- MÓDULO 2: GESTIÓN DE PROYECTOS (Core) ---
+package "Módulo 2: Gestión de Proyectos" {
+    enum EstadoProyecto {
+        PLANIFICACION
+        EN_EJECUCION
+        CERRADO
+        SUSPENDIDO
+    }
+
+    enum NaturalezaInvestigacion {
+        BASICA
+        APLICADA
+        EXPERIMENTAL
+    }
+
+enum MacroTipo {
+    INVESTIGACION
+    VINCULACION
+    TRANSFERENCIA
+}
+
+enum SubTipoInvestigacion {
+    SEMILLA
+    INTERNO
+    GRUPAL_INTERDISCIPLINARIO
+}
+
+enum ModalidadVinculacion {
+    BECA_ESTIPENDIO
+    VOLUNTARIADO_AD_HONOREM
+    CONTRATO_SERVICIOS_PROFESIONALES
+    NOMBRAMIENTO_OCASIONAL
+}
+
+enum TipoColaborador {
+    ESTUDIANTE_PREGRADO
+    ESTUDIANTE_POSGRADO
+    PROFESIONAL_TECNICO
+    DOCENTE_INVITADO
+}
+
+' --- CLASES DEL MODELO ---
+
+abstract class "PROYECTO" as Proyecto {
+    # String codigo
+    # String titulo
+    # double montoReferencial
+    # Date fechaInicio
+    # Date fechaFinEstimada
+    # EstadoProyecto estado
+    --
+    + {abstract} validarReglasHijo() : boolean
+    + esInformacionCompleta() : boolean
+    + agregarVinculacion(colaborador: Colaborador, modalidad: ModalidadVinculacion) : void
+    + cerrarVinculacion(cedula: String, fechaSalida: Date) : void
+    + contarPersonalActivo(fechaCorte: Date) : int
+}
+
+note left of Proyecto::esInformacionCompleta
+  <b>Template Method:</b>
+  1. Valida datos generales (Título, Código).
+  2. Llama a <i>validarReglasHijo()</i> para
+     reglas específicas.
+  3. Verifica que exista historial de personal.
+end note
+
+class "PROYECTO_INVESTIGACION" as ProyInv {
+    - SubTipoInvestigacion subTipo
+    - NaturalezaInvestigacion naturaleza
+    - List<String> papersComprometidos
+    --
+    + validarReglasHijo() : boolean
+    + registrarPaper(doi: String) : void
+}
+
+note bottom of ProyInv
+  <b>Regla de Negocio:</b>
+  Si subTipo == SEMILLA,
+  debe tener al menos 1
+  ESTUDIANTE_PREGRADO activo.
+end note
+
+class "PROYECTO_VINCULACION" as ProyVinc {
+    - String ambitoGeografico
+    - int beneficiariosDirectos
+    - String entidadBeneficiaria
+    --
+    + validarReglasHijo() : boolean
+}
+
+class "PROYECTO_TRANSFERENCIA" as ProyTrans {
+    - int nivelTRL
+    - boolean tienePropiedadIntelectual
+    - String descripcionPrototipo
+    --
+    + validarReglasHijo() : boolean
+}
+
+class "ASIGNACION" as Asignacion {
+    - Date fechaInicio
+    - Date fechaFin
+    - int horasSemanales
+    - double montoMensualReferencial
+    - ModalidadVinculacion modalidad
+    --
+    + estaActiva(fecha: Date) : boolean
+    + validarCoherencia() : boolean
+    + finalizarContrato() : void
+}
+
+note right of Asignacion::validarCoherencia
+  Valida que la Modalidad
+  corresponda al Tipo de Colaborador
+  (Ej: Estudiante no puede facturar).
+end note
+
+class "COLABORADOR" as Colaborador {
+    - String cedula
+    - String nombres
+    - TipoColaborador tipo
+    - String carreraOTitulo
+    --
+    + validarDocumentoIdentidad() : boolean
+    + actualizarDatosContacto() : void
+}
+
+' --- RELACIONES ---
+
+' Herencia
+Proyecto <|-- ProyInv
+Proyecto <|-- ProyVinc
+Proyecto <|-- ProyTrans
+
+' Composición (El historial muere si muere el proyecto)
+Proyecto "1" *-- "0..*" Asignacion : historial de personal >
+
+' Agregación (El colaborador existe independientemente del proyecto)
+Asignacion "*" o-- "1" Colaborador : vincula a >
+
+' Dependencias de Enums
+Proyecto ..> MacroTipo
+ProyInv ..> SubTipoInvestigacion
+Asignacion ..> ModalidadVinculacion
+Colaborador ..> TipoColaborador
+
+@enduml
