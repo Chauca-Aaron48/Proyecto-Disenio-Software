@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP - Registrar Proyecto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --sgp-blue: #0f52ba; }
+        body { background-color: #f4f6f9; }
+
+        .navbar-sgp { background-color: var(--sgp-blue); }
+        .navbar-brand { font-weight: bold; font-size: 1.4rem; }
+
+        .card-form {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .form-label { font-weight: 600; font-size: 0.9rem; color: #555; }
+        .btn-save { background-color: var(--sgp-blue); color: white; padding: 10px 30px; }
+        .btn-save:hover { background-color: #0b45a0; color: white; }
+        
+        /* Estilo para el campo de Estado Automático */
+        .status-readonly {
+            background-color: #fff3cd; 
+            color: #856404; 
+            font-weight: bold;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="index.html">
+                <i class="bi bi-arrow-left me-2 fs-5"></i>SGP Académico
+            </a>
+            <div class="d-flex text-white align-items-center ms-auto">
+                <span class="me-3">Dr. Juan Pérez</span>
+                <i class="bi bi-person-circle fs-3"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5" style="max-width: 800px;">
+        
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="listaProyectos.html">Proyectos</a></li>
+                <li class="breadcrumb-item active fw-bold" aria-current="page">Solicitud de Registro</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-dark m-0">Registrar Nuevo Proyecto</h2>
+                <p class="text-muted small mb-0">Paso previo a la solicitud de Aval</p>
+            </div>
+        </div>
+
+        <form id="formRegistro" onsubmit="guardarProyecto(event)">
+            
+            <div class="card card-form p-4 mb-4">
+                
+                <div class="alert alert-info small d-flex align-items-center mb-4">
+                    <i class="bi bi-info-circle-fill fs-5 me-3"></i>
+                    <div>
+                        <strong>Importante:</strong> La información ingresada aquí será contrastada con el documento de Aval. 
+                        Asegúrese de que el <u>número de ayudantes</u> coincida con lo aprobado por su departamento.
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">Código del Proyecto <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-upc"></i></span>
+                            <input type="text" class="form-control" placeholder="Ej: INV-2026-01" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Periodo Académico <span class="text-danger">*</span></label>
+                        <select class="form-select" required>
+                            <option value="" selected disabled>Seleccione...</option>
+                            <option>2026-I (Ene - May)</option>
+                            <option>2026-II (Jun - Oct)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Estado Inicial</label>
+                        <input type="text" class="form-control status-readonly" value="Pendiente de Aprobación" readonly>
+                        <div class="form-text small text-muted">Se actualizará al recibir el Aval.</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Nombre del Proyecto <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" placeholder="Ingrese el nombre oficial..." required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Proyecto <span class="text-danger">*</span></label>
+                        <select class="form-select" required>
+                            <option value="" selected disabled>Seleccione...</option>
+                            <option value="Investigacion">Investigación</option>
+                            <option value="Vinculacion">Vinculación con la Sociedad</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Docente Tutor</label>
+                        <input type="text" class="form-control bg-light" value="Dr. Juan Pérez" readonly>
+                    </div>
+
+                    <div class="col-12"><hr class="text-muted"></div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-primary">
+                            <i class="bi bi-people-fill me-1"></i> Cantidad de Ayudantes Solicitados <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" class="form-control fw-bold" min="1" max="10" placeholder="Ej: 2" required>
+                        <div class="form-text small">
+                            Este cupo será el <strong>límite máximo</strong> de estudiantes que el sistema le permitirá registrar.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 mb-5">
+                <a href="listaProyectos.html" class="btn btn-outline-secondary px-4">Cancelar</a>
+                <button type="submit" class="btn btn-save px-4 shadow-sm">
+                    <i class="bi bi-send-check me-2"></i> Registrar Solicitud
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        function guardarProyecto(event) {
+            event.preventDefault();
+            
+            // Simulación
+            const btn = document.querySelector('.btn-save');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registrando...';
+
+            setTimeout(() => {
+                alert("¡Solicitud registrada!\n\nEl proyecto ha sido creado con estado 'Pendiente'.\nAhora puede proceder a gestionar el trámite de Aval.");
+                window.location.href = 'listaProyectos.html';
+            }, 1500);
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

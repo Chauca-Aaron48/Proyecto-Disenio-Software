@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP Académico - Inicio Jefatura</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --sgp-blue: #0f52ba;
+            --sgp-red: #dc3545;
+            --sgp-yellow: #ffc107; /* Nuevo color para Solicitudes */
+        }
+        
+        body { background-color: #f4f6f9; }
+
+        .navbar-sgp {
+            background-color: var(--sgp-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand { font-weight: bold; font-size: 1.4rem; }
+
+        /* Estilos de Tarjetas */
+        .card-menu {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            cursor: pointer;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .card-menu:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-header-menu {
+            padding: 15px;
+            font-size: 1.1rem; /* Un poco más pequeño para que quepa bien */
+            font-weight: 600;
+            text-align: center;
+            color: white;
+        }
+
+        .header-blue { background-color: var(--sgp-blue); }
+        .header-red { background-color: var(--sgp-red); }
+        .header-yellow { background-color: #e6a700; color: white; } /* Amarillo oscurecido para texto blanco */
+
+        .card-body-content {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .icon-menu { font-size: 3rem; margin-bottom: 0.8rem; }
+        
+        .btn-action {
+            width: 90%;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-weight: 500;
+            margin-top: auto;
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-5">
+        <div class="container">
+            <a class="navbar-brand" href="#">SGP Académico</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item me-3"><a class="nav-link active" href="listaProyectos.html">PROYECTOS</a></li>
+                    <li class="nav-item me-3"><a class="nav-link" href="listaAyudantes.html">AYUDANTES</a></li>
+                    <li class="nav-item position-relative me-3">
+                        <i class="bi bi-bell-fill text-white fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6em;">5</span>
+                    </li>
+                    <li class="nav-item"><i class="bi bi-person-circle text-white fs-3"></i></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        
+        <div class="text-center mb-5">
+            <h2 class="fw-normal text-dark">Bienvenido, Jefatura</h2>
+            <p class="text-muted">Panel de Control y Gestión Académica</p>
+        </div>
+
+        <div class="row justify-content-center g-4">
+            
+            <div class="col-md-4">
+                <div class="card card-menu" onclick="window.location.href='consulta.html'">
+                    <div class="card-header-menu header-blue">Consulta General</div>
+                    <div class="card-body card-body-content">
+                        <i class="bi bi-search icon-menu text-primary"></i>
+                        <h5 class="card-title text-muted mb-2">Historial de Nómina</h5>
+                        <p class="text-secondary small mb-3">
+                            Consulte los estudiantes asignados a cada proyecto por periodos.
+                        </p>
+                        <button class="btn btn-outline-primary btn-action">Ver Historial</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-menu" onclick="window.location.href='aprobacionProyectos.html'">
+                    <div class="card-header-menu header-yellow">
+                        Solicitudes de Aval
+                    </div>
+                    <div class="card-body card-body-content">
+                        <div class="position-relative">
+                            <i class="bi bi-inbox-fill icon-menu text-warning"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger fs-6">3</span>
+                        </div>
+                        <h5 class="card-title text-muted mb-2">Nuevos Proyectos</h5>
+                        <p class="text-secondary small mb-3">
+                            Verifique y apruebe las solicitudes de registro de nuevos proyectos.
+                        </p>
+                        <button class="btn btn-outline-warning btn-action text-dark border-warning">Revisar Solicitudes</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-menu" onclick="window.location.href='consultaValidacion.html'">
+                    <div class="card-header-menu header-red">Auditoría Mensual</div>
+                    <div class="card-body card-body-content">
+                        <div class="position-relative">
+                            <i class="bi bi-clipboard-check-fill icon-menu text-danger"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger fs-6">8</span>
+                        </div>
+                        <h5 class="card-title text-muted mb-2">Validación Nómina</h5>
+                        <p class="text-secondary small mb-3">
+                            Controle si los tutores están actualizando su lista de estudiantes a tiempo.
+                        </p>
+                        <button class="btn btn-outline-danger btn-action">Auditar Ahora</button>
+                        <a href="reporteSemestral.html" class="small mt-3 text-secondary" onclick="event.stopPropagation()">Ver Matriz Semestral</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

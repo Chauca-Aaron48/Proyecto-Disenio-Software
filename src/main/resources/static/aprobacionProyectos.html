@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP - Gestión de Aprobaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --sgp-blue: #0f52ba; }
+        body { background-color: #f4f6f9; }
+
+        .navbar-sgp { background-color: var(--sgp-blue); }
+        .navbar-brand { font-weight: bold; font-size: 1.4rem; }
+
+        /* Estilo de Pestañas */
+        .nav-tabs .nav-link {
+            color: #555;
+            font-weight: 500;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 12px 20px;
+        }
+        .nav-tabs .nav-link:hover { color: var(--sgp-blue); }
+        .nav-tabs .nav-link.active {
+            color: var(--sgp-blue);
+            background: transparent;
+            border-bottom: 3px solid var(--sgp-blue);
+            font-weight: bold;
+        }
+
+        /* Tarjetas - Estilos Generales */
+        .card-request {
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card-request:hover { transform: translateY(-2px); }
+
+        /* Variantes de Borde según tipo */
+        .border-aval { border-left: 5px solid #ffc107; } /* Amarillo para Aval */
+        .border-invest { border-left: 5px solid #0dcaf0; } /* Azul Cielo para Investigación */
+
+        /* Badges */
+        .badge-cupo {
+            background-color: #e9ecef;
+            color: #333;
+            border: 1px solid #ced4da;
+            padding: 5px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-approve-aval { background-color: #ffc107; color: #000; border: none; }
+        .btn-approve-aval:hover { background-color: #e0a800; }
+
+        .btn-approve-final { background-color: #0f52ba; color: white; border: none; }
+        .btn-approve-final:hover { background-color: #0a3d8f; }
+
+        .btn-reject { background-color: #dc3545; color: white; border: none; }
+        .btn-reject:hover { background-color: #bb2d3b; color: white; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="index.html">
+                <i class="bi bi-arrow-left me-2 fs-5"></i>SGP Académico
+            </a>
+            <div class="d-flex text-white align-items-center ms-auto">
+                <span class="me-3 small text-uppercase opacity-75">Rol: Jefatura</span>
+                <span class="me-3">Ing. Director SGP</span>
+                <i class="bi bi-person-badge-fill fs-3"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark m-0">Gestión de Aprobaciones</h3>
+                <p class="text-muted small mb-0">Gestione los avales internos y las resoluciones finales.</p>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-4" id="approvalTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="avales-tab" data-bs-toggle="tab" data-bs-target="#avales" type="button" role="tab">
+                    <i class="bi bi-file-earmark-check me-2"></i>Solicitudes de Aval
+                    <span class="badge bg-warning text-dark ms-2 rounded-pill">2</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="investigacion-tab" data-bs-toggle="tab" data-bs-target="#investigacion" type="button" role="tab">
+                    <i class="bi bi-building-check me-2"></i>Aprobación Final (Dirección)
+                    <span class="badge bg-info text-dark ms-2 rounded-pill">1</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="approvalTabsContent">
+            
+            <div class="tab-pane fade show active" id="avales" role="tabpanel">
+                <div class="alert alert-warning border-0 d-flex align-items-center mb-4">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <div>Verifique que el cupo de ayudantes coincida con la solicitud física antes de emitir el Aval.</div>
+                </div>
+                <div id="lista-avales">
+                    </div>
+            </div>
+
+            <div class="tab-pane fade" id="investigacion" role="tabpanel">
+                <div class="alert alert-info border-0 d-flex align-items-center mb-4">
+                    <i class="bi bi-bank2 me-2"></i>
+                    <div>Proyectos que ya cuentan con Aval y requieren confirmación de la resolución de Dirección de Investigación.</div>
+                </div>
+                <div id="lista-finales">
+                    </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // DATOS MOCK - LISTA 1: Solicitudes de Aval (Paso 1)
+        const avalesPendientes = [
+            {
+                id: 101,
+                codigo: "INV-2026-05",
+                nombre: "Análisis de Datos Climáticos Regionales",
+                tutor: "Dr. Juan Pérez",
+                tipo: "Investigación",
+                fecha: "18/01/2026",
+                cupo: 2
+            },
+            {
+                id: 102,
+                codigo: "VIN-2026-02",
+                nombre: "Capacitación TIC en Zonas Rurales",
+                tutor: "Msc. Maria Gómez",
+                tipo: "Vinculación",
+                fecha: "17/01/2026",
+                cupo: 4
+            }
+        ];
+
+        // DATOS MOCK - LISTA 2: Pendientes de Dirección (Paso 2)
+        // Estos proyectos YA pasaron el aval, pero el sistema espera que Dirección diga "SI".
+        const aprobacionFinalPendiente = [
+            {
+                id: 201,
+                codigo: "TD-2026-01",
+                nombre: "Digitalización de Archivos Históricos",
+                tutor: "Ing. Pedro Soto",
+                tipo: "Transformación",
+                fechaAval: "10/01/2026", // Fecha en que Jefatura dio el Aval
+                resolucion: "Pendiente"
+            }
+        ];
+
+        // --- RENDERIZADO TAB 1: AVALES ---
+        function renderAvales() {
+            const container = document.getElementById('lista-avales');
+            let html = '';
+
+            if(avalesPendientes.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4">No hay solicitudes de aval pendientes.</div>';
+                return;
+            }
+
+            avalesPendientes.forEach(s => {
+                html += `
+                    <div class="col-12 mb-3">
+                        <div class="card card-request border-aval p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-light text-dark border me-2">${s.codigo}</span>
+                                        <small class="text-muted">Solicitado: ${s.fecha}</small>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">${s.nombre}</h5>
+                                    <div class="text-secondary small">Tutor: ${s.tutor}</div>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <span class="badge-cupo fw-bold"><i class="bi bi-people-fill me-1"></i> ${s.cupo}</span>
+                                    <div class="small text-muted mt-1">Cupo</div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button class="btn btn-sm btn-reject me-2" onclick="rechazarAval(${s.id})">Observar</button>
+                                    <button class="btn btn-sm btn-approve-aval fw-bold" onclick="aprobarAval(${s.id})">
+                                        <i class="bi bi-check-circle me-1"></i> Emitir Aval
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- RENDERIZADO TAB 2: APROBACIÓN FINAL ---
+        function renderFinales() {
+            const container = document.getElementById('lista-finales');
+            let html = '';
+
+            if(aprobacionFinalPendiente.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4">No hay proyectos esperando resolución de Dirección.</div>';
+                return;
+            }
+
+            aprobacionFinalPendiente.forEach(p => {
+                html += `
+                    <div class="col-12 mb-3">
+                        <div class="card card-request border-invest p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-success-subtle text-success border border-success me-2">Aval Emitido</span>
+                                        <small class="text-muted">Fecha Aval: ${p.fechaAval}</small>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">${p.nombre}</h5>
+                                    <div class="text-secondary small">Código: <strong>${p.codigo}</strong> | Tutor: ${p.tutor}</div>
+                                </div>
+                                <div class="col-md-5 text-end border-start">
+                                    <div class="text-muted small mb-2">¿Llegó la Resolución de Dirección?</div>
+                                    <button class="btn btn-sm btn-outline-danger me-2" onclick="rechazarFinal(${p.id})">Rechazado por Dir.</button>
+                                    <button class="btn btn-sm btn-approve-final" onclick="aprobarFinal(${p.id}, '${p.codigo}')">
+                                        <i class="bi bi-file-earmark-check-fill me-1"></i> Registrar Aprobación
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- FUNCIONES DE ACCIÓN ---
+
+        function aprobarAval(id) {
+            // Mover de Avales -> Aprobación Final (Simulado)
+            if(confirm("¿Confirma que el Aval físico es correcto?\n\nEl proyecto pasará a la lista de espera de Dirección de Investigación.")) {
+                const item = avalesPendientes.find(x => x.id === id);
+                
+                // Lo quitamos de avales
+                const index = avalesPendientes.indexOf(item);
+                if (index > -1) avalesPendientes.splice(index, 1);
+
+                // Lo agregamos a finales (simulando que pasa el tiempo)
+                aprobacionFinalPendiente.push({
+                    id: item.id,
+                    codigo: item.codigo,
+                    nombre: item.nombre,
+                    tutor: item.tutor,
+                    tipo: item.tipo,
+                    fechaAval: "Hoy", // Fecha actual
+                    resolucion: "Pendiente"
+                });
+
+                renderAvales();
+                renderFinales();
+                alert("Aval emitido correctamente. Verifique la pestaña 'Aprobación Final'.");
+            }
+        }
+
+        function aprobarFinal(id, codigo) {
+            if(confirm(`CONFIRMACIÓN FINAL:\n\n¿Ha verificado la resolución aprobatoria de Dirección de Investigación para el proyecto ${codigo}?\n\nAl aceptar, el proyecto se ACTIVARÁ y el docente podrá iniciar actividades.`)) {
+                const index = aprobacionFinalPendiente.findIndex(x => x.id === id);
+                if (index > -1) {
+                    aprobacionFinalPendiente.splice(index, 1);
+                    renderFinales();
+                    alert("¡Proyecto Activado Exitosamente!");
+                }
+            }
+        }
+        
+        // Funciones de rechazo simplificadas
+        function rechazarAval(id) { alert("Observación enviada al docente."); }
+        function rechazarFinal(id) { alert("Proyecto marcado como NO APROBADO por Dirección."); }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAvales();
+            renderFinales();
+        });
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

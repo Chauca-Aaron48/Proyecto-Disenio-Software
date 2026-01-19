@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP - Consulta Histórica de Nómina</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --sgp-blue: #0f52ba; /* Azul Académico */
+        }
+        
+        body { background-color: #f4f6f9; }
+
+        /* NAVBAR */
+        .navbar-sgp { background-color: var(--sgp-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar-brand { font-weight: bold; font-size: 1.4rem; }
+
+        /* PANEL DE CONTROL (FILTROS) */
+        .card-control {
+            border: none;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--sgp-blue); /* Detalle visual */
+        }
+
+        /* TABLA */
+        .card-table {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: white;
+            overflow: hidden;
+        }
+
+        .table-custom th {
+            font-weight: 600;
+            color: #444;
+            background-color: #f1f3f5;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 15px;
+        }
+        
+        .table-custom td {
+            vertical-align: middle;
+            padding: 15px;
+            font-size: 0.95rem;
+        }
+
+        /* Estilo de los Nombres de Proyecto */
+        .project-title { font-weight: 600; color: var(--sgp-blue); display: block; }
+        .project-code { font-size: 0.8em; color: #777; background: #e9ecef; padding: 2px 6px; border-radius: 4px; }
+
+        /* Lista de Ayudantes */
+        .student-list { list-style: none; padding-left: 0; margin-bottom: 0; }
+        .student-item {
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        .student-icon { color: #aaa; margin-right: 8px; }
+        
+        /* Etiquetas de Tipo */
+        .badge-interno { background-color: #e7f1ff; color: #0d6efd; border: 1px solid #cce5ff; font-size: 0.75em; margin-left: auto; }
+        .badge-externo { background-color: #d1e7dd; color: #198754; border: 1px solid #badbcc; font-size: 0.75em; margin-left: auto; }
+
+        /* Estado del Proyecto en ese mes */
+        .status-badge { font-size: 0.8em; font-weight: 500; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-4">
+        <div class="container">
+            <a class="navbar-brand me-4" href="index.html">
+                <i class="bi bi-arrow-left me-2 fs-5"></i>SGP Académico
+            </a>
+            <div class="d-flex text-white align-items-center ms-auto">
+                <span class="me-3 small">Modo: Consulta Histórica</span>
+                <i class="bi bi-shield-lock-fill fs-5" title="Solo Lectura"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <h3 class="fw-bold text-dark mb-1">Histórico de Asignaciones</h3>
+                <p class="text-muted small mb-0">Visualice qué estudiantes estaban asignados en cada periodo.</p>
+            </div>
+        </div>
+
+        <div class="card card-control mb-4 p-4">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-primary small">
+                        <i class="bi bi-calendar-check-fill me-1"></i> PERIODO DE CONSULTA
+                    </label>
+                    <select class="form-select form-select-lg fw-bold text-dark" id="select-periodo" onchange="cambiarPeriodo()">
+                        <option value="ene2026" selected>Enero 2026 (Actual)</option>
+                        <option value="dic2025">Diciembre 2025</option>
+                        <option value="nov2025">Noviembre 2025</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-bold text-secondary small">BUSCAR PROYECTO</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0 bg-light" placeholder="Nombre o código...">
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button class="btn btn-outline-secondary w-100 mt-4" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i> Imprimir Reporte
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-table">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Proyecto / Código</th>
+                            <th style="width: 20%;">Tutor Responsable</th>
+                            <th style="width: 35%;">Nómina de Estudiantes (En el periodo)</th>
+                            <th style="width: 15%; text-align: center;">Estado Mes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-historica">
+                        </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white text-center py-3 text-muted small">
+                Mostrando registro histórico según base de datos de auditoría.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- BASE DE DATOS MOCK (Historial simulado) ---
+        
+        // Datos de ENERO 2026 (Situación Actual)
+        const datosEnero2026 = [
+            {
+                nombre: "Sistema de Gestión Pymes",
+                codigo: "VIN-2025-01",
+                tutor: "Ing. Francisco Villalba",
+                estado: "Activo",
+                ayudantes: [
+                    { nombre: "Juan Pérez", tipo: "Interno" },
+                    { nombre: "Maria Lopez", tipo: "Externo" },
+                    { nombre: "Kevin Morales", tipo: "Interno" } // Nuevo ingreso en Enero
+                ]
+            },
+            {
+                nombre: "IA para Arqueología",
+                codigo: "INV-2025-04",
+                tutor: "Dr. Juan Perez",
+                estado: "Activo",
+                ayudantes: [
+                    { nombre: "Carlos Diaz", tipo: "Interno" }
+                ]
+            }
+        ];
+
+        // Datos de DICIEMBRE 2025 (Pasado)
+        const datosDic2025 = [
+            {
+                nombre: "Sistema de Gestión Pymes",
+                codigo: "VIN-2025-01",
+                tutor: "Ing. Francisco Villalba",
+                estado: "Activo",
+                ayudantes: [
+                    { nombre: "Juan Pérez", tipo: "Interno" },
+                    { nombre: "Maria Lopez", tipo: "Externo" }
+                    // Kevin NO está aquí porque entró en Enero
+                ]
+            },
+            {
+                nombre: "IA para Arqueología",
+                codigo: "INV-2025-04",
+                tutor: "Dr. Juan Perez",
+                estado: "Pendiente", // Estaba bloqueado en Dic
+                ayudantes: [
+                    { nombre: "Carlos Diaz", tipo: "Interno" },
+                    { nombre: "Ana Ruiz", tipo: "Externo" } // Ana estaba en Dic, pero salió después
+                ]
+            }
+        ];
+
+        // Función Principal de Renderizado
+        function renderTabla(datos) {
+            const tbody = document.getElementById('tabla-historica');
+            let html = '';
+
+            if(datos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5">No hay registros para este periodo.</td></tr>';
+                return;
+            }
+
+            datos.forEach(p => {
+                // Generar lista de estudiantes
+                let listaHTML = '';
+                if(p.ayudantes.length > 0) {
+                    listaHTML = '<ul class="student-list">';
+                    p.ayudantes.forEach(a => {
+                        let badgeClass = a.tipo === 'Interno' ? 'badge-interno' : 'badge-externo';
+                        listaHTML += `
+                            <li class="student-item">
+                                <i class="bi bi-person-fill student-icon"></i>
+                                <span>${a.nombre}</span>
+                                <span class="badge ${badgeClass} rounded-pill">${a.tipo}</span>
+                            </li>
+                        `;
+                    });
+                    listaHTML += '</ul>';
+                } else {
+                    listaHTML = '<span class="text-muted fst-italic small">Sin estudiantes asignados en este mes.</span>';
+                }
+
+                // Color del estado
+                let estadoColor = p.estado === 'Activo' ? 'text-success bg-success-subtle' : 'text-danger bg-danger-subtle';
+
+                html += `
+                    <tr>
+                        <td>
+                            <span class="project-title">${p.nombre}</span>
+                            <span class="project-code">${p.codigo}</span>
+                        </td>
+                        <td>${p.tutor}</td>
+                        <td>${listaHTML}</td>
+                        <td class="text-center">
+                            <span class="badge ${estadoColor} px-3 py-2 rounded-pill status-badge">${p.estado}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Evento: Cambiar de Mes
+        function cambiarPeriodo() {
+            const selector = document.getElementById('select-periodo');
+            const valor = selector.value;
+            
+            // Simulación de carga (feedback visual)
+            const tbody = document.getElementById('tabla-historica');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Cargando datos históricos...</td></tr>';
+
+            setTimeout(() => {
+                if (valor === 'ene2026') {
+                    renderTabla(datosEnero2026);
+                } else if (valor === 'dic2025') {
+                    renderTabla(datosDic2025);
+                } else {
+                    renderTabla([]); // Ejemplo vacío
+                }
+            }, 300); // Pequeño delay para realismo
+        }
+
+        // Iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTabla(datosEnero2026);
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
