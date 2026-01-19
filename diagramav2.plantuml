@@ -1,0 +1,481 @@
+@startuml SGPDIIC_ClassDiagram
+
+' ============================================
+' MODELO (Domain Layer)
+' ============================================
+
+package "Model" {
+    
+    ' Enumeraciones
+    enum EstadoProyecto {
+        POSTULACION
+        APROBADO
+        EN_EJECUCION
+        FINALIZADO
+    }
+    
+    enum TipoParticipante {
+        AYUDANTE_INVESTIGACION
+        TECNICO_INVESTIGACION
+        ASISTENTE_INVESTIGACION
+    }
+    
+    enum TipoContratacion {
+        TECNICA
+        PROFESIONAL
+    }
+    
+    enum TipoColaborador {
+        PROFESOR_DIRECTOR
+        PROFESOR_COLABORADOR
+    }
+    
+    enum PeriodoAcademico {
+        A
+        B
+    }
+    
+    ' Clase abstracta Proyecto (Template Method Pattern)
+    abstract class Proyecto {
+        - codigoProyecto: String
+        - nombreProyecto: String
+        - estadoProyecto: EstadoProyecto
+        - periodoInicio: String
+        - profesorDirector: Colaborador
+        - participantes: List<Participante>
+        - colaboradores: List<Colaborador>
+        - fechaRegistro: Date
+        - fechaUltimaActualizacion: Date
+        
+        + Proyecto(nombre: String, director: Colaborador)
+        + agregarParticipante(p: Participante): void
+        + removerParticipante(cedula: String): void
+        + actualizarParticipante(p: Participante): void
+        + agregarColaborador(c: Colaborador): void
+        + getParticipantes(): List<Participante>
+        + getColaboradores(): List<Colaborador>
+        + cambiarEstado(estado: EstadoProyecto): void
+        + {abstract} validarProyecto(): boolean
+        + {abstract} getTipoProyecto(): String
+        + generarReporteMensual(): ReporteMensual
+        + generarInformeFinal(): InformeFinal
+    }
+    
+    ' Subclases de Proyecto (Strategy Pattern para validación)
+    class ProyectoInvestigacion {
+        - subtipo: String
+        - ayudantesInvestigacion: List<Participante>
+        - papers: List<Paper>
+        
+        + ProyectoInvestigacion(nombre: String, director: Colaborador, subtipo: String)
+        + agregarPaper(paper: Paper): void
+        + validarProyecto(): boolean
+        + getTipoProyecto(): String
+    }
+    
+    class ProyectoVinculacion {
+        - ambitoGeografico: String
+        - beneficiarios: List<Beneficiario>
+        
+        + ProyectoVinculacion(nombre: String, director: Colaborador)
+        + agregarBeneficiario(b: Beneficiario): void
+        + validarProyecto(): boolean
+        + getTipoProyecto(): String
+    }
+    
+    class ProyectoTransferenciaTecnologica {
+        - presupuestoPropiedadIntelectual: double
+        - prototipos: List<Prototipo>
+        
+        + ProyectoTransferenciaTecnologica(nombre: String, director: Colaborador)
+        + agregarPrototipo(p: Prototipo): void
+        + validarProyecto(): boolean
+        + getTipoProyecto(): String
+    }
+    
+    ' Clase Participante
+    class Participante {
+        - cedula: String
+        - nombre: String
+        - tipoParticipante: TipoParticipante
+        - tipoContratacion: TipoContratacion
+        - fechaIngreso: Date
+        - fechaSalida: Date
+        - activo: boolean
+        
+        + Participante(cedula: String, nombre: String, tipo: TipoParticipante)
+        + getTipoContratacion(): TipoContratacion
+        + marcarInactivo(fecha: Date): void
+        + esEstudiante(): boolean
+        + esProfesional(): boolean
+    }
+    
+    ' Clase Colaborador
+    class Colaborador {
+        - cedula: String
+        - nombres: String
+        - tipoColaborador: TipoColaborador
+        - horasDisponibles: int
+        
+        + Colaborador(cedula: String, nombres: String, tipo: TipoColaborador)
+        + tieneHorasDisponibles(): boolean
+        + esDirector(): boolean
+    }
+    
+    ' Clases auxiliares
+    class Paper {
+        - titulo: String
+        - autores: List<String>
+        - fechaPublicacion: Date
+        
+        + Paper(titulo: String)
+    }
+    
+    class Beneficiario {
+        - nombre: String
+        - descripcion: String
+        
+        + Beneficiario(nombre: String)
+    }
+    
+    class Prototipo {
+        - nombre: String
+        - descripcion: String
+        - fechaCreacion: Date
+        
+        + Prototipo(nombre: String)
+    }
+    
+    ' Reportes
+    class ReporteMensual {
+        - proyecto: Proyecto
+        - mes: int
+        - anio: int
+        - cambiosRealizados: List<CambioParticipante>
+        - fechaGeneracion: Date
+        
+        + ReporteMensual(proyecto: Proyecto, mes: int, anio: int)
+        + registrarCambio(cambio: CambioParticipante): void
+        + hubosCambios(): boolean
+    }
+    
+    class CambioParticipante {
+        - participante: Participante
+        - tipoCambio: String
+        - fecha: Date
+        - motivo: String
+        
+        + CambioParticipante(p: Participante, tipo: String)
+    }
+    
+    class InformeFinal {
+        - proyecto: Proyecto
+        - numeroParticipantes: int
+        - participantesActuales: List<Participante>
+        - fechaGeneracion: Date
+        
+        + InformeFinal(proyecto: Proyecto)
+        + generarInforme(): String
+    }
+    
+    ' Usuario del sistema
+    class Usuario {
+        - username: String
+        - password: String
+        - rol: String
+        - colaborador: Colaborador
+        - activo: boolean
+        
+        + Usuario(username: String, password: String, rol: String)
+        + autenticar(password: String): boolean
+        + tienePermiso(accion: String): boolean
+    }
+    
+    ' Relaciones del Modelo
+    Proyecto <|-- ProyectoInvestigacion
+    Proyecto <|-- ProyectoVinculacion
+    Proyecto <|-- ProyectoTransferenciaTecnologica
+    
+    Proyecto "1" *-- "0..*" Participante
+    Proyecto "1" *-- "1..*" Colaborador
+    Proyecto "1" -- "1" Colaborador : director
+    
+    ProyectoInvestigacion "1" *-- "0..*" Paper
+    ProyectoVinculacion "1" *-- "0..*" Beneficiario
+    ProyectoTransferenciaTecnologica "1" *-- "0..*" Prototipo
+    
+    ReporteMensual "1" -- "1" Proyecto
+    ReporteMensual "1" *-- "0..*" CambioParticipante
+    InformeFinal "1" -- "1" Proyecto
+    
+    Usuario "1" -- "0..1" Colaborador
+    
+    Participante ..> TipoParticipante
+    Participante ..> TipoContratacion
+    Colaborador ..> TipoColaborador
+    Proyecto ..> EstadoProyecto
+}
+
+' ============================================
+' FACTORY PATTERN para creación de proyectos
+' ============================================
+
+package "Factory" {
+    
+    interface ProyectoFactory {
+        + crearProyecto(tipo: String, nombre: String, director: Colaborador): Proyecto
+    }
+    
+    class ProyectoFactoryImpl {
+        + crearProyecto(tipo: String, nombre: String, director: Colaborador): Proyecto
+        - crearProyectoInvestigacion(nombre: String, director: Colaborador, subtipo: String): ProyectoInvestigacion
+        - crearProyectoVinculacion(nombre: String, director: Colaborador): ProyectoVinculacion
+        - crearProyectoTransferencia(nombre: String, director: Colaborador): ProyectoTransferenciaTecnologica
+    }
+    
+    ProyectoFactory <|.. ProyectoFactoryImpl
+    ProyectoFactoryImpl ..> Proyecto
+}
+
+' ============================================
+' REPOSITORY PATTERN (Persistencia)
+' ============================================
+
+package "Repository" {
+    
+    interface ProyectoRepository {
+        + guardar(proyecto: Proyecto): void
+        + buscarPorCodigo(codigo: String): Proyecto
+        + listarTodos(): List<Proyecto>
+        + listarPorEstado(estado: EstadoProyecto): List<Proyecto>
+        + actualizar(proyecto: Proyecto): void
+        + eliminar(codigo: String): void
+    }
+    
+    interface UsuarioRepository {
+        + guardar(usuario: Usuario): void
+        + buscarPorUsername(username: String): Usuario
+        + listarTodos(): List<Usuario>
+        + actualizar(usuario: Usuario): void
+        + eliminar(username: String): void
+    }
+    
+    interface ReporteRepository {
+        + guardarReporteMensual(reporte: ReporteMensual): void
+        + guardarInformeFinal(informe: InformeFinal): void
+        + buscarReportesMensuales(codigoProyecto: String): List<ReporteMensual>
+        + buscarInformeFinal(codigoProyecto: String): InformeFinal
+    }
+    
+    class ProyectoRepositoryImpl {
+        - proyectos: Map<String, Proyecto>
+        + guardar(proyecto: Proyecto): void
+        + buscarPorCodigo(codigo: String): Proyecto
+        + listarTodos(): List<Proyecto>
+        + listarPorEstado(estado: EstadoProyecto): List<Proyecto>
+        + actualizar(proyecto: Proyecto): void
+        + eliminar(codigo: String): void
+    }
+    
+    class UsuarioRepositoryImpl {
+        - usuarios: Map<String, Usuario>
+        + guardar(usuario: Usuario): void
+        + buscarPorUsername(username: String): Usuario
+        + listarTodos(): List<Usuario>
+        + actualizar(usuario: Usuario): void
+        + eliminar(username: String): void
+    }
+    
+    class ReporteRepositoryImpl {
+        - reportesMensuales: Map<String, List<ReporteMensual>>
+        - informesFinales: Map<String, InformeFinal>
+        + guardarReporteMensual(reporte: ReporteMensual): void
+        + guardarInformeFinal(informe: InformeFinal): void
+        + buscarReportesMensuales(codigoProyecto: String): List<ReporteMensual>
+        + buscarInformeFinal(codigoProyecto: String): InformeFinal
+    }
+    
+    ProyectoRepository <|.. ProyectoRepositoryImpl
+    UsuarioRepository <|.. UsuarioRepositoryImpl
+    ReporteRepository <|.. ReporteRepositoryImpl
+}
+
+' ============================================
+' CONTROLADOR (MVC)
+' ============================================
+
+package "Controller" {
+    
+    class ProyectoController {
+        - proyectoRepository: ProyectoRepository
+        - proyectoFactory: ProyectoFactory
+        - reporteRepository: ReporteRepository
+        
+        + ProyectoController(repo: ProyectoRepository, factory: ProyectoFactory)
+        + registrarProyectoPostulacion(datos: Map): String
+        + actualizarParticipantes(codigo: String, participantes: List): void
+        + registrarInformeFinal(codigo: String, datos: Map): void
+        + generarReporteMensual(codigo: String): ReporteMensual
+        + listarProyectos(): List<Proyecto>
+        + listarProyectosPorEstado(estado: EstadoProyecto): List<Proyecto>
+        + buscarProyecto(codigo: String): Proyecto
+    }
+    
+    class UsuarioController {
+        - usuarioRepository: UsuarioRepository
+        
+        + UsuarioController(repo: UsuarioRepository)
+        + crearUsuario(username: String, password: String, rol: String): Usuario
+        + autenticar(username: String, password: String): Usuario
+        + actualizarCredenciales(username: String, newPassword: String): void
+        + listarUsuarios(): List<Usuario>
+        + activarDesactivarUsuario(username: String, activo: boolean): void
+    }
+    
+    class ReporteController {
+        - reporteRepository: ReporteRepository
+        - proyectoRepository: ProyectoRepository
+        
+        + ReporteController(reporteRepo: ReporteRepository, proyectoRepo: ProyectoRepository)
+        + generarReporteMensual(codigoProyecto: String, mes: int, anio: int): ReporteMensual
+        + obtenerReportesMensuales(codigoProyecto: String): List<ReporteMensual>
+        + generarInformeFinal(codigoProyecto: String): InformeFinal
+    }
+    
+    ProyectoController ..> ProyectoRepository
+    ProyectoController ..> ProyectoFactory
+    ProyectoController ..> ReporteRepository
+    UsuarioController ..> UsuarioRepository
+    ReporteController ..> ReporteRepository
+    ReporteController ..> ProyectoRepository
+}
+
+' ============================================
+' VISTA (MVC)
+' ============================================
+
+package "View" {
+    
+    interface Vista {
+        + mostrar(): void
+        + actualizar(): void
+    }
+    
+    class LoginView {
+        - usuarioController: UsuarioController
+        + mostrar(): void
+        + autenticar(username: String, password: String): boolean
+    }
+    
+    class MenuPrincipalView {
+        - usuarioActual: Usuario
+        + mostrar(): void
+        + mostrarMenuJefeDepartamento(): void
+        + mostrarMenuProfesor(): void
+        + mostrarMenuAdministrador(): void
+    }
+    
+    class RegistroProyectoView {
+        - proyectoController: ProyectoController
+        + mostrar(): void
+        + registrarPostulacion(): void
+        + mostrarFormularioPostulacion(): void
+    }
+    
+    class ActualizacionParticipantesView {
+        - proyectoController: ProyectoController
+        + mostrar(): void
+        + actualizarParticipantes(codigoProyecto: String): void
+        + mostrarFormularioActualizacion(): void
+    }
+    
+    class InformeFinalView {
+        - proyectoController: ProyectoController
+        - reporteController: ReporteController
+        + mostrar(): void
+        + registrarInformeFinal(codigoProyecto: String): void
+        + mostrarFormularioInforme(): void
+    }
+    
+    class VisualizacionProyectosView {
+        - proyectoController: ProyectoController
+        + mostrar(): void
+        + listarProyectos(): void
+        + verDetalleProyecto(codigo: String): void
+        + filtrarPorEstado(estado: EstadoProyecto): void
+    }
+    
+    class GestionUsuariosView {
+        - usuarioController: UsuarioController
+        + mostrar(): void
+        + crearUsuario(): void
+        + modificarCredenciales(): void
+        + listarUsuarios(): void
+    }
+    
+    Vista <|.. LoginView
+    Vista <|.. MenuPrincipalView
+    Vista <|.. RegistroProyectoView
+    Vista <|.. ActualizacionParticipantesView
+    Vista <|.. InformeFinalView
+    Vista <|.. VisualizacionProyectosView
+    Vista <|.. GestionUsuariosView
+    
+    LoginView ..> UsuarioController
+    RegistroProyectoView ..> ProyectoController
+    ActualizacionParticipantesView ..> ProyectoController
+    InformeFinalView ..> ProyectoController
+    InformeFinalView ..> ReporteController
+    VisualizacionProyectosView ..> ProyectoController
+    GestionUsuariosView ..> UsuarioController
+}
+
+' ============================================
+' OBSERVER PATTERN para notificaciones
+' ============================================
+
+package "Observer" {
+    
+    interface Observer {
+        + actualizar(mensaje: String): void
+    }
+    
+    class NotificacionObserver {
+        + actualizar(mensaje: String): void
+        - enviarNotificacion(mensaje: String): void
+    }
+    
+    class Subject {
+        - observers: List<Observer>
+        + agregarObserver(o: Observer): void
+        + removerObserver(o: Observer): void
+        + notificar(mensaje: String): void
+    }
+    
+    Observer <|.. NotificacionObserver
+    Subject "1" o-- "0..*" Observer
+}
+
+' ============================================
+' APLICACIÓN PRINCIPAL
+' ============================================
+
+class AplicacionSGPDIIC {
+    - proyectoController: ProyectoController
+    - usuarioController: UsuarioController
+    - reporteController: ReporteController
+    - vistaActual: Vista
+    - usuarioActual: Usuario
+    
+    + main(args: String[]): void
+    + inicializar(): void
+    + ejecutar(): void
+    - cargarDatosIniciales(): void
+}
+
+AplicacionSGPDIIC ..> ProyectoController
+AplicacionSGPDIIC ..> UsuarioController
+AplicacionSGPDIIC ..> ReporteController
+AplicacionSGPDIIC ..> Vista
+
+@enduml
