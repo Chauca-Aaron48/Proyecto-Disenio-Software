@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP - Auditoría de Nómina</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --sgp-blue: #0f52ba; }
+        body { background-color: #f4f6f9; }
+
+        .navbar-sgp { background-color: var(--sgp-blue); }
+        .navbar-brand { font-weight: bold; font-size: 1.4rem; }
+
+        /* Filtros */
+        .card-filters {
+            border: none;
+            border-radius: 8px;
+            background-color: #eef2f7;
+        }
+        
+        /* Tabla */
+        .table-audit th {
+            font-weight: 600;
+            color: #555;
+            background-color: #f8f9fa;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        .table-audit td { vertical-align: middle; font-size: 0.9rem; }
+        .project-name {
+            color: var(--sgp-blue);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .project-name:hover { text-decoration: underline; }
+
+        /* Badges de Estado */
+        .badge-status { padding: 6px 10px; border-radius: 4px; font-weight: 500; font-size: 0.8em; }
+        .status-ok { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; } /* Verde suave */
+        .status-warn { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; } /* Amarillo suave */
+        .status-danger { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; } /* Rojo suave */
+
+        /* Fechas */
+        .date-main { font-weight: 600; color: #333; }
+        .date-sub { font-size: 0.8em; color: #777; }
+
+        /* Panel Lateral */
+        .offcanvas-header { background-color: #f0f2f5; border-bottom: 1px solid #dee2e6; }
+        .timeline-item {
+            border-left: 2px solid #e9ecef;
+            padding-left: 20px;
+            padding-bottom: 20px;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--sgp-blue);
+            border-radius: 50%;
+            position: absolute;
+            left: -7px;
+            top: 0;
+        }
+        .change-log { font-size: 0.9rem; background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 6px; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="indexJefatura.html">
+                <i class="bi bi-arrow-left me-2 fs-5"></i>SGP Académico
+            </a>
+            <div class="d-flex text-white align-items-center ms-auto">
+                <span class="me-3">Jefatura SGP</span>
+                <i class="bi bi-person-circle fs-3"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-dark fw-bold mb-0">Control de Actualización de Nómina</h3>
+            <span class="text-muted small">Periodo Actual: Enero 2026</span>
+        </div>
+
+        <div class="card card-filters mb-4 p-3 shadow-sm">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Buscar Proyecto / Tutor</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0" placeholder="Ej: Gestión Pymes...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted">Estado Actualización</label>
+                    <select class="form-select">
+                        <option>Todos</option>
+                        <option value="ok">Al día (Actualizado)</option>
+                        <option value="warn">Por vencer</option>
+                        <option value="danger">Desactualizado</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100"><i class="bi bi-funnel-fill me-1"></i> Filtrar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-audit table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Proyecto</th>
+                                <th style="width: 20%;">Tutor Responsable</th>
+                                <th style="width: 15%;">Última Actualización</th> <th style="width: 15%;">Próximo Corte</th> <th style="width: 15%;">Estudiantes Actuales</th>
+                                <th style="width: 10%;" class="text-center">Estado</th>
+                                <th style="width: 5%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-registros">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-end shadow" tabindex="-1" id="offcanvasDetalle" style="width: 450px;">
+        <div class="offcanvas-header">
+            <div>
+                <h5 class="offcanvas-title fw-bold mb-0">Historial de Nómina</h5>
+                <small class="text-muted" id="det-codigo">PRJ-2025-001</small>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body bg-light">
+            
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="fw-bold text-primary mb-1" id="det-proyecto">Nombre del Proyecto</h6>
+                    <div class="text-secondary small mb-3" id="det-tutor">Tutor: Nombre</div>
+                    
+                    <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded">
+                        <div class="text-center">
+                            <div class="small text-muted">Ayudantes</div>
+                            <div class="fw-bold fs-5" id="det-cant">0</div>
+                        </div>
+                        <div class="vr"></div>
+                        <div class="text-center">
+                            <div class="small text-muted">Último Cambio</div>
+                            <div class="fw-bold text-dark" id="det-fecha">--/--/--</div>
+                        </div>
+                        <div class="vr"></div>
+                        <div class="text-center">
+                            <div class="small text-muted">Estado</div>
+                            <span class="badge status-ok" id="det-estado">Al día</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-muted mb-3 ms-2">Bitácora de Movimientos</h6>
+            
+            <div class="ps-2" id="timeline-container">
+                </div>
+
+        </div>
+        <div class="offcanvas-footer p-3 bg-white border-top">
+            <button class="btn btn-outline-primary w-100" onclick="alert('Enviar recordatorio al tutor')">
+                <i class="bi bi-envelope-fill me-2"></i> Enviar Recordatorio
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // DATOS MOCK (Simulando Base de Datos)
+        const registros = [
+            {
+                id: 1,
+                proyecto: "Sistema de Gestión Pymes",
+                codigo: "VIN-2025-01",
+                tutor: "Ing. Francisco Villalba",
+                ultimaAct: "12 Ene 2026",
+                proxCorte: "30 Ene 2026",
+                cantEstudiantes: 3,
+                estado: "ok", // ok, warn, danger
+                historial: [
+                    { fecha: "12 Ene 2026", accion: "Actualización Mensual", detalle: "Sin cambios en la nómina. Se confirmó asistencia." },
+                    { fecha: "05 Dic 2025", accion: "Ingreso Estudiante", detalle: "Se añadió a: Juan Perez (Interno)" }
+                ]
+            },
+            {
+                id: 2,
+                proyecto: "IA para Arqueología",
+                codigo: "INV-2025-04",
+                tutor: "Dr. Juan Perez",
+                ultimaAct: "15 Dic 2025", // Hace un mes
+                proxCorte: "30 Ene 2026",
+                cantEstudiantes: 1,
+                estado: "warn", // Por vencer
+                historial: [
+                    { fecha: "15 Dic 2025", accion: "Salida Estudiante", detalle: "Se retiró: Maria Lopez por finalización de horas." }
+                ]
+            },
+            {
+                id: 3,
+                proyecto: "Redes Neuronales v2",
+                codigo: "INV-2026-01",
+                tutor: "Msc. Ana Lopez",
+                ultimaAct: "01 Nov 2025", // Muy viejo
+                proxCorte: "30 Ene 2026",
+                cantEstudiantes: 0,
+                estado: "danger", // Desactualizado
+                historial: [
+                    { fecha: "01 Nov 2025", accion: "Creación Proyecto", detalle: "Inicio de actividades. Aún sin estudiantes." }
+                ]
+            }
+        ];
+
+        function renderTabla() {
+            const tbody = document.getElementById('tabla-registros');
+            let html = '';
+
+            registros.forEach(r => {
+                // Definir estilos según estado
+                let badgeClass = '';
+                let badgeText = '';
+                
+                if(r.estado === 'ok') {
+                    badgeClass = 'status-ok'; badgeText = 'Al día';
+                } else if(r.estado === 'warn') {
+                    badgeClass = 'status-warn'; badgeText = 'Por Vencer';
+                } else {
+                    badgeClass = 'status-danger'; badgeText = 'Desactualizado';
+                }
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="project-name" onclick="verDetalle(${r.id})">${r.proyecto}</div>
+                            <small class="text-muted">${r.codigo}</small>
+                        </td>
+                        <td>${r.tutor}</td>
+                        <td>
+                            <div class="date-main">${r.ultimaAct}</div>
+                            <small class="text-muted">Hace ${calcularDias(r.ultimaAct)} días</small>
+                        </td>
+                        <td>
+                            <div class="text-danger fw-bold">${r.proxCorte}</div>
+                        </td>
+                        <td class="text-center fw-bold fs-5 text-secondary">
+                            <i class="bi bi-people me-1"></i>${r.cantEstudiantes}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge-status ${badgeClass}">${badgeText}</span>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-light text-primary" onclick="verDetalle(${r.id})">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Simulación simple de cálculo de días
+        function calcularDias(fechaStr) {
+            // Esto es solo visual para el ejemplo
+            if(fechaStr.includes("Ene")) return 4;
+            if(fechaStr.includes("Dic")) return 32;
+            return 75; 
+        }
+
+        function verDetalle(id) {
+            const data = registros.find(r => r.id === id);
+            
+            // Llenar cabecera panel
+            document.getElementById('det-proyecto').innerText = data.proyecto;
+            document.getElementById('det-codigo').innerText = data.codigo;
+            document.getElementById('det-tutor').innerText = "Tutor: " + data.tutor;
+            document.getElementById('det-cant').innerText = data.cantEstudiantes;
+            document.getElementById('det-fecha').innerText = data.ultimaAct;
+
+            // Llenar timeline
+            const timelineContainer = document.getElementById('timeline-container');
+            let timelineHTML = '';
+            
+            data.historial.forEach(h => {
+                timelineHTML += `
+                    <div class="timeline-item">
+                        <div class="text-muted small fw-bold">${h.fecha}</div>
+                        <div class="fw-bold text-dark">${h.accion}</div>
+                        <div class="change-log text-secondary">
+                            <i class="bi bi-info-circle me-1"></i> ${h.detalle}
+                        </div>
+                    </div>
+                `;
+            });
+            timelineContainer.innerHTML = timelineHTML;
+
+            // Abrir Offcanvas
+            const bsOffcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasDetalle'));
+            bsOffcanvas.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', renderTabla);
+    </script>
+</body>
+</html>
