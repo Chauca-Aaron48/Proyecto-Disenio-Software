@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP - Notificaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --sgp-blue: #0f52ba; }
+        body { background-color: #f4f6f9; }
+
+        .navbar-sgp { background-color: var(--sgp-blue); }
+        .navbar-brand { font-weight: bold; font-size: 1.4rem; }
+
+        /* Estilos de la Lista de Notificaciones */
+        .notification-list {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .notification-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #ccc; /* Color por defecto */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        /* Variantes por Tipo */
+        .type-urgent { border-left-color: #dc3545; } /* Rojo: Validación Vencida */
+        .type-success { border-left-color: #198754; } /* Verde: Proyecto Aprobado */
+        .type-info { border-left-color: #0dcaf0; }    /* Azul: Observación o Aviso */
+
+        /* Estado "No Leído" */
+        .unread {
+            background-color: #fff;
+        }
+        .unread::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 10px;
+            height: 10px;
+            background-color: #dc3545;
+            border-radius: 50%;
+        }
+
+        .time-text { font-size: 0.85rem; color: #888; }
+        
+        .icon-box {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .bg-icon-urgent { background-color: #f8d7da; color: #842029; }
+        .bg-icon-success { background-color: #d1e7dd; color: #0f5132; }
+        .bg-icon-info { background-color: #cff4fc; color: #055160; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="javascript:history.back()">
+                <i class="bi bi-arrow-left me-2 fs-5"></i>SGP Académico
+            </a>
+            <div class="d-flex text-white align-items-center ms-auto">
+                <span class="me-3">Dr. Juan Pérez</span>
+                <i class="bi bi-person-circle fs-3"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        
+        <div class="d-flex justify-content-between align-items-center notification-list mb-4">
+            <h3 class="fw-bold text-dark m-0">Bandeja de Notificaciones</h3>
+            <button class="btn btn-outline-secondary btn-sm" onclick="marcarTodasLeidas()">
+                <i class="bi bi-check2-all me-1"></i> Marcar todas como leídas
+            </button>
+        </div>
+
+        <div class="notification-list" id="contenedor-notificaciones">
+            </div>
+
+    </div>
+
+    <script>
+        // DATOS MOCK: Simulando lo que llegaría del Backend
+        const notificaciones = [
+            {
+                id: 1,
+                tipo: "urgent", // urgent, success, info
+                titulo: "Validación Mensual Requerida",
+                mensaje: "El periodo de Enero está por cerrar. Por favor valide la nómina del proyecto <strong>Alfabetización Rural (VIN-23-15)</strong> antes de 3 días.",
+                tiempo: "Hace 2 horas",
+                leido: false,
+                link: "listaProyectos.html", // Lleva a validar
+                accion: "Ir a Validar"
+            },
+            {
+                id: 2,
+                tipo: "success",
+                titulo: "¡Proyecto Aprobado!",
+                mensaje: "Su proyecto <strong>Sistema de IA (INV-24-01)</strong> ha recibido la Resolución Final de Dirección. El estado ahora es ACTIVO. Ya puede registrar ayudantes.",
+                tiempo: "Ayer",
+                leido: false,
+                link: "registroAyudante.html?project=INV-24-01", // Lleva a registrar (usando el truco de pre-selección)
+                accion: "Registrar Ayudante"
+            },
+            {
+                id: 3,
+                tipo: "info",
+                titulo: "Observación en Solicitud de Aval",
+                mensaje: "La Jefatura ha devuelto su solicitud (TD-2026-01). Motivo: <em>'El cupo solicitado excede el límite departamental'</em>.",
+                tiempo: "Hace 2 días",
+                leido: true,
+                link: "#", // Llevaría a editar el proyecto
+                accion: "Revisar Solicitud"
+            }
+        ];
+
+        function renderNotificaciones() {
+            const container = document.getElementById('contenedor-notificaciones');
+            let html = '';
+
+            if (notificaciones.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-5">No tienes notificaciones nuevas.</div>';
+                return;
+            }
+
+            notificaciones.forEach(n => {
+                // Configuración visual según tipo
+                let iconClass = '', iconName = '', borderClass = '';
+                
+                if(n.tipo === 'urgent') {
+                    iconClass = 'bg-icon-urgent'; iconName = 'bi-exclamation-triangle-fill'; borderClass = 'type-urgent';
+                } else if (n.tipo === 'success') {
+                    iconClass = 'bg-icon-success'; iconName = 'bi-check-circle-fill'; borderClass = 'type-success';
+                } else {
+                    iconClass = 'bg-icon-info'; iconName = 'bi-info-circle-fill'; borderClass = 'type-info';
+                }
+
+                // Clase para no leídos
+                let unreadClass = n.leido ? '' : 'unread';
+
+                html += `
+                    <div class="notification-item ${borderClass} ${unreadClass} d-flex align-items-start" onclick="leerNotificacion('${n.link}')">
+                        <div class="icon-box ${iconClass}">
+                            <i class="bi ${iconName}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between mb-1">
+                                <h6 class="fw-bold mb-0 text-dark">${n.titulo}</h6>
+                                <span class="time-text">${n.tiempo}</span>
+                            </div>
+                            <p class="text-secondary mb-2 small">${n.mensaje}</p>
+                            
+                            <button class="btn btn-sm btn-link text-decoration-none p-0 fw-bold" style="font-size: 0.85rem;">
+                                ${n.accion} <i class="bi bi-arrow-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function leerNotificacion(url) {
+            // Simular marcar como leído e ir al link
+            window.location.href = url;
+        }
+
+        function marcarTodasLeidas() {
+            const items = document.querySelectorAll('.notification-item');
+            items.forEach(item => item.classList.remove('unread'));
+            alert("Todas las notificaciones marcadas como leídas.");
+        }
+
+        document.addEventListener('DOMContentLoaded', renderNotificaciones);
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

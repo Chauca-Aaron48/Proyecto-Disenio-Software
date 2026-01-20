@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGP - Listado y Control de Proyectos</title>
+    <title>SGP - Listado de Proyectos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
@@ -14,11 +14,39 @@
         .navbar-sgp { background-color: var(--sgp-blue); }
         .navbar-brand { font-weight: bold; font-size: 1.4rem; }
 
-        /* HEADER */
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
-        /* TABLA */
-        .card-table { border: none; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
+        /* Estilos de Badges (Semáforo) */
+        .badge-status { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .st-verde { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .st-naranja { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; }
+        .st-rojo { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+
+        /* Estilos de Texto para Fechas */
+        .deadline-box { font-weight: 600; color: #333; }
+        .deadline-countdown { font-size: 0.8rem; display: block; }
+        .text-urgent { color: #dc3545; font-weight: 700; }
+        .text-warning-dark { color: #d68c08; font-weight: 600; }
+
+        /* Botón Específico de Validar */
+        .btn-validar {
+            background-color: var(--sgp-blue); 
+            color: white; 
+            font-size: 0.85rem; 
+            border-radius: 4px; 
+            padding: 5px 12px;
+            white-space: nowrap;
+            border: none;
+        }
+        .btn-validar:hover { background-color: #0a3d8f; color: white; }
+
+        /* Botón para agregar ayudante (Icono +) */
+        .btn-helper-add {
+            background-color: #0dcaf0;
+            color: white;
+            border: none;
+            margin-left: 5px;
+        }
+        .btn-helper-add:hover { background-color: #0aa2c0; color: white; }
+
         .table-proyectos th {
             background-color: #f8f9fa;
             color: #495057;
@@ -28,33 +56,6 @@
             vertical-align: middle;
         }
         .table-proyectos td { vertical-align: middle; font-size: 0.95rem; }
-        
-        /* ESTADOS DE PROYECTO */
-        .badge-status { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.5px; }
-        .st-verde { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
-        .st-naranja { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; }
-        .st-rojo { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
-
-        /* FECHAS Y PLAZOS (Lo nuevo) */
-        .deadline-box { font-weight: 600; color: #333; }
-        .deadline-countdown { font-size: 0.8rem; display: block; }
-        .text-urgent { color: #dc3545; font-weight: 700; } /* Rojo fuerte */
-        .text-warning-dark { color: #d68c08; font-weight: 600; } /* Naranja oscuro */
-        .text-safe { color: #198754; } /* Verde */
-
-        /* BOTONES ACCIÓN */
-        .btn-validar {
-            background-color: var(--sgp-blue); 
-            color: white; 
-            font-size: 0.85rem; 
-            border-radius: 4px; 
-            padding: 5px 12px;
-            white-space: nowrap;
-        }
-        .btn-validar:hover { background-color: #0a3d8f; color: white; }
-        
-        .action-icon { cursor: pointer; color: #6c757d; transition: 0.2s; }
-        .action-icon:hover { color: var(--sgp-blue); transform: scale(1.1); }
 
     </style>
 </head>
@@ -62,55 +63,60 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-4">
         <div class="container-fluid px-4">
-            <a class="navbar-brand me-4" href="index.html">
+            <a class="navbar-brand me-4" href="indexDocente.html">
                 <i class="bi bi-arrow-left me-2 fs-5"></i>SGP Académico
             </a>
-            <div class="d-flex text-white align-items-center ms-auto">
-                <span class="me-3">Dr. Juan Pérez (Docente)</span>
-                <i class="bi bi-person-circle fs-3"></i>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active fw-bold" href="#">PROYECTOS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="listaAyudantes.html">AYUDANTES</a></li>
+                </ul>
+                <div class="d-flex text-white align-items-center">
+                    <span class="me-3">Dr. Juan Pérez</span>
+                    <i class="bi bi-person-circle fs-3"></i>
+                </div>
             </div>
         </div>
     </nav>
 
     <div class="container-fluid px-4 mb-5">
         
-        <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="fw-bold text-dark m-0">Control de Proyectos</h3>
-                <p class="text-muted small mb-0">Periodo Actual: Enero 2026</p>
+                <p class="text-muted small mb-0">Periodo Académico: Enero 2026</p>
             </div>
             <button class="btn btn-primary shadow-sm" onclick="window.location.href='registroProyecto.html'">
                 <i class="bi bi-plus-lg me-1"></i> Registrar Proyecto
             </button>
         </div>
 
-        <div class="card card-table mb-4 p-3">
+        <div class="card border-0 shadow-sm mb-4 p-3 bg-white">
             <div class="row g-2">
                 <div class="col-md-4">
-                    <input type="text" class="form-control" placeholder="Buscar proyecto...">
+                    <input type="text" class="form-control" placeholder="Buscar proyecto por código o nombre...">
                 </div>
                 <div class="col-md-3">
                     <select class="form-select text-secondary">
-                        <option>Estado: Todos</option>
+                        <option>Estado Auditoría: Todos</option>
                         <option>Pendientes de Validar</option>
                         <option>Al día</option>
-                        <option>Vencidos</option>
+                        <option>Desactualizados</option>
                     </select>
                 </div>
             </div>
         </div>
 
-        <div class="card card-table">
+        <div class="card border-0 shadow-sm">
             <div class="table-responsive">
                 <table class="table table-proyectos table-hover mb-0">
-                    <thead>
+                    <thead class="bg-light">
                         <tr>
                             <th style="width: 10%;">Código</th>
-                            <th style="width: 25%;">Proyecto</th>
-                            <th style="width: 15%;">Tutor</th>
-                            <th style="width: 10%;">Tipo</th>
-                            <th style="width: 15%;">Cierre de Mes (Límite)</th> <th style="width: 10%;" class="text-center">Estado Mes</th>
-                            <th style="width: 15%;">Acción Requerida</th>
+                            <th style="width: 30%;">Nombre del Proyecto</th>
+                            <th style="width: 15%;">Límite Validación</th>
+                            <th style="width: 15%;" class="text-center">Estado Auditoría</th>
+                            <th style="width: 20%;">Acciones Docente</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-body">
@@ -122,43 +128,28 @@
     </div>
 
     <script>
-        // DATOS MOCK CON FECHAS DE CADUCIDAD
+        // DATOS SIMULADOS (Mismo estado que ve la Jefatura)
         const proyectos = [
             {
-                codigo: "VIN-24-01",
+                codigo: "INV-24-01",
                 nombre: "Sistema de IA para detección de plagas",
-                tutor: "Dra. Ana Ruiz",
-                tipo: "Investigación",
-                limite: "30/01/2026", // Fecha futura
-                estadoMes: "pendiente", // Aún no valida este mes
-                diasRestantes: 5 // Calculado por el backend
+                limite: "30/01/2026",
+                estadoMes: "aldia", // Ya validó
+                diasRestantes: 5
             },
             {
-                codigo: "VINC-23-15",
-                nombre: "Programa de Alfabetización Digital",
-                tutor: "Msc. Carlos Díaz",
-                tipo: "Vinculación",
+                codigo: "VIN-23-15",
+                nombre: "Alfabetización Digital Rural",
                 limite: "30/01/2026",
-                estadoMes: "aldia", // YA validó este mes
+                estadoMes: "pendiente", // Falta validar este mes
                 diasRestantes: 5
             },
             {
                 codigo: "TD-23-08",
-                nombre: "Migración a Nube Híbrida",
-                tutor: "Ing. Pedro Soto",
-                tipo: "Transformación",
-                limite: "31/12/2025", // Fecha PASADA
-                estadoMes: "vencido", // Se le olvidó validar el mes pasado
+                nombre: "Migración a Nube Híbrida Institucional",
+                limite: "31/12/2025",
+                estadoMes: "desactualizado", // Se le pasó la fecha
                 diasRestantes: -18
-            },
-            {
-                codigo: "INV-24-03",
-                nombre: "Análisis de Datos Climáticos",
-                tutor: "Dr. Juan Pérez",
-                tipo: "Investigación",
-                limite: "30/01/2026",
-                estadoMes: "pendiente",
-                diasRestantes: 2 // Urgente
             }
         ];
 
@@ -171,31 +162,42 @@
                 let estadoBadge = '';
                 let accionHTML = '';
 
-                // 1. LÓGICA DE FECHAS (Semáforo de tiempo)
+                // --- LÓGICA DE ESTADOS Y BOTONES ---
+
                 if (p.estadoMes === 'aldia') {
-                    // Si ya cumplió, la fecha sale normal
+                    // CASO 1: AL DÍA (Verde)
                     fechaHTML = `
                         <div class="deadline-box text-muted">${p.limite}</div>
                         <span class="deadline-countdown text-success"><i class="bi bi-check-all"></i> Completado</span>
                     `;
                     estadoBadge = '<span class="badge badge-status st-verde">AL DÍA</span>';
-                    accionHTML = `<button class="btn btn-sm btn-outline-secondary border-0" disabled><i class="bi bi-check-lg"></i> Validado</button>`;
+                    
+                    // Acciones: Botón de check deshabilitado (ya validó) + Botón para agregar más ayudantes si quiere
+                    accionHTML = `
+                        <button class="btn btn-sm btn-outline-secondary border-0" disabled title="Mes Validado">
+                            <i class="bi bi-check-lg"></i> Validado
+                        </button>
+                        <a href="registroAyudante.html?project=${p.codigo}" class="btn btn-sm btn-helper-add" title="Registrar Nuevo Ayudante en este Proyecto">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </a>
+                    `;
                 
-                } else if (p.estadoMes === 'vencido') {
-                    // Si se pasó de la fecha
+                } else if (p.estadoMes === 'desactualizado') {
+                    // CASO 2: DESACTUALIZADO (Rojo)
                     fechaHTML = `
                         <div class="deadline-box text-danger">${p.limite}</div>
                         <span class="deadline-countdown text-urgent">Venció hace ${Math.abs(p.diasRestantes)} días</span>
                     `;
-                    estadoBadge = '<span class="badge badge-status st-rojo">ATRASADO</span>';
-                    // Botón rojo llamativo
+                    estadoBadge = '<span class="badge badge-status st-rojo">DESACTUALIZADO</span>';
+                    
+                    // Acción: Regularizar (Urgente)
                     accionHTML = `
-                        <button class="btn btn-validar bg-danger border-danger" onclick="validar('${p.codigo}')">
-                            <i class="bi bi-exclamation-circle"></i> Regularizar
+                        <button class="btn btn-sm btn-danger text-white border-0" onclick="alert('Contacte a Jefatura para desbloquear el periodo.')">
+                            <i class="bi bi-exclamation-triangle"></i> Regularizar
                         </button>`;
 
                 } else {
-                    // Si está pendiente (A tiempo o Urgente)
+                    // CASO 3: PENDIENTE (Naranja) - EL FLUJO NORMAL
                     let colorTexto = p.diasRestantes <= 3 ? 'text-warning-dark' : 'text-muted';
                     let textoDias = p.diasRestantes <= 3 ? `¡Cierra en ${p.diasRestantes} días!` : `Quedan ${p.diasRestantes} días`;
                     
@@ -204,28 +206,27 @@
                         <span class="deadline-countdown ${colorTexto}">${textoDias}</span>
                     `;
                     estadoBadge = '<span class="badge badge-status st-naranja">PENDIENTE</span>';
-                    // Botón azul estándar
+                    
+                    // Acción: EL BOTÓN DE VALIDAR QUE ME PEDISTE
                     accionHTML = `
-                        <button class="btn btn-validar" onclick="validar('${p.codigo}')">
+                        <button class="btn btn-validar shadow-sm" onclick="validar('${p.codigo}')">
                             <i class="bi bi-check2-square"></i> Validar Mes
-                        </button>`;
+                        </button>
+                        <a href="registroAyudante.html?project=${p.codigo}" class="btn btn-sm btn-helper-add" title="Registrar Nuevo Ayudante">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </a>
+                    `;
                 }
 
                 html += `
                     <tr>
                         <td class="small text-muted fw-bold">${p.codigo}</td>
                         <td class="fw-medium">${p.nombre}</td>
-                        <td>${p.tutor}</td>
-                        <td><span class="badge bg-light text-dark border">${p.tipo}</span></td>
-                        
                         <td>${fechaHTML}</td>
-                        
                         <td class="text-center">${estadoBadge}</td>
-                        
                         <td>
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center">
                                 ${accionHTML}
-                                <i class="bi bi-three-dots-vertical action-icon ms-2" title="Más opciones"></i>
                             </div>
                         </td>
                     </tr>
@@ -235,22 +236,30 @@
             tbody.innerHTML = html;
         }
 
-        // Lógica del Botón Validar
+        // --- FUNCIÓN DE VALIDACIÓN (TU LÓGICA SOLICITADA) ---
         function validar(codigo) {
-            // Aquí es donde conectamos con la lógica que me pediste antes:
-            // Preguntar si hay cambios antes de validar.
-            if(confirm(`Validación de Mes para ${codigo}:\n\n¿La nómina de estudiantes se mantiene IGUAL para este periodo?\n\n[Aceptar] = Sí, validar automáticamente.\n[Cancelar] = No, necesito registrar cambios.`)) {
-                alert("¡Listo! Se ha registrado la validación automática. El proyecto queda 'Al Día'.");
-                // Aquí recargaríamos la tabla para ponerlo verde
+            // Mensaje explicativo
+            const mensaje = `VALIDACIÓN MENSUAL (${codigo}):\n\n` +
+                            `¿Confirma que la nómina de estudiantes se mantiene IGUAL para este mes?\n\n` +
+                            `[Aceptar] = SÍ, validar automáticamente (Sin cambios).\n` +
+                            `[Cancelar] = NO, hubo cambios (Ir a registrar ayudante).`;
+
+            if(confirm(mensaje)) {
+                // OPCIÓN A: NO HUBO CAMBIOS -> VALIDAR
+                alert("¡Validación Exitosa!\n\nSe ha registrado que el proyecto continúa con la misma nómina.\nEl estado cambiará a 'AL DÍA'.");
+                location.reload(); // Recarga para simular el cambio a verde
+                
             } else {
-                // Redirige a la pantalla de gestión que hicimos antes
-                // window.location.href = 'consulta.html?modo=editar'; // Ejemplo
-                alert("Redirigiendo a la gestión de nómina para registrar altas/bajas...");
+                // OPCIÓN B: SÍ HUBO CAMBIOS -> REDIRIGIR
+                // Enviamos el código del proyecto en la URL para que el formulario lo pre-seleccione
+                alert("Entendido. Redirigiendo al formulario para registrar los cambios...");
+                window.location.href = 'registroAyudante.html?project=' + codigo;
             }
         }
 
         document.addEventListener('DOMContentLoaded', renderTabla);
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
