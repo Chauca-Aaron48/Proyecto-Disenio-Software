@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP - Listado de Ayudantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --sgp-blue: #0f52ba; }
+        body { background-color: #f4f6f9; }
+
+        .navbar-sgp { background-color: var(--sgp-blue); }
+        .navbar-brand { font-weight: bold; font-size: 1.4rem; }
+
+        /* Estilos idénticos a Proyectos */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-filters { border: none; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card-table { border: none; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
+        
+        .table-custom th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+        .table-custom td { vertical-align: middle; font-size: 0.95rem; }
+
+        /* Badges de Tipo */
+        .badge-interno { background-color: #e7f1ff; color: #0d6efd; border: 1px solid #cce5ff; }
+        .badge-externo { background-color: #d1e7dd; color: #198754; border: 1px solid #badbcc; }
+
+        /* Avatar simple */
+        .avatar-initials {
+            width: 35px; height: 35px;
+            background-color: #e9ecef; color: #555;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.9rem;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-sgp mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="indexDocente.html">
+                <i class="bi bi-arrow-left me-2 fs-5"></i>SGP Académico
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="listaProyectos.html">PROYECTOS</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-bold" href="listaAyudantes.html">AYUDANTES</a></li>
+                </ul>
+                <div class="d-flex text-white align-items-center">
+                    <span class="me-3">Dr. Juan Pérez</span>
+                    <i class="bi bi-person-circle fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mb-5">
+        
+        <div class="page-header">
+            <div>
+                <h3 class="fw-bold text-dark m-0">Gestión de Ayudantes</h3>
+                <p class="text-muted small mb-0">Estudiantes vinculados en el periodo actual</p>
+            </div>
+            <button class="btn btn-primary shadow-sm" onclick="window.location.href='registroAyudante.html'">
+                <i class="bi bi-person-plus-fill me-1"></i> Registrar Ayudante
+            </button>
+        </div>
+
+        <div class="card card-filters mb-4 p-3 bg-white">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0" placeholder="Buscar por nombre o cédula...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select text-secondary">
+                        <option selected>Proyecto: Todos</option>
+                        <option>Sistema de IA (INV-24-01)</option>
+                        <option>Alfabetización Rural (VIN-23-15)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select text-secondary">
+                        <option selected>Tipo: Todos</option>
+                        <option>Interno (Pasante)</option>
+                        <option>Externo (Voluntario)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select text-secondary">
+                        <option selected>Estado: Activo</option>
+                        <option>Finalizado</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-table">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Cédula</th>
+                            <th>Proyecto Asignado</th>
+                            <th>Tipo</th>
+                            <th>Fecha Ingreso</th>
+                            <th>Horas Acum.</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-ayudantes">
+                        </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white py-3 d-flex justify-content-between align-items-center">
+                <small class="text-muted">Total: 3 estudiantes activos</small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const ayudantes = [
+            {
+                nombre: "Kevin Morales",
+                cedula: "1725489632",
+                proyecto: "Sistema de IA (INV-24-01)",
+                tipo: "Interno",
+                fecha: "10/01/2026",
+                horas: 20
+            },
+            {
+                nombre: "Maria Lopez",
+                cedula: "0912345678",
+                proyecto: "Alfabetización Rural (VIN-23-15)",
+                tipo: "Externo",
+                fecha: "15/01/2026",
+                horas: 12
+            },
+            {
+                nombre: "Juan Pérez Jr.",
+                cedula: "1711223344",
+                proyecto: "Sistema de IA (INV-24-01)",
+                tipo: "Interno",
+                fecha: "10/01/2026",
+                horas: 45
+            }
+        ];
+
+        function renderTabla() {
+            const tbody = document.getElementById('tabla-ayudantes');
+            let html = '';
+
+            ayudantes.forEach(a => {
+                let badgeClass = a.tipo === 'Interno' ? 'badge-interno' : 'badge-externo';
+                // Iniciales para el avatar
+                let iniciales = a.nombre.split(' ').map(n => n[0]).join('').substring(0,2);
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-initials">${iniciales}</div>
+                                <div class="fw-bold text-dark">${a.nombre}</div>
+                            </div>
+                        </td>
+                        <td class="text-muted small">${a.cedula}</td>
+                        <td class="text-primary small fw-medium">${a.proyecto}</td>
+                        <td><span class="badge ${badgeClass} rounded-pill fw-normal">${a.tipo}</span></td>
+                        <td>${a.fecha}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="height: 6px; width: 60px;">
+                                    <div class="progress-bar bg-info" style="width: ${a.horas}%"></div>
+                                </div>
+                                <span class="small fw-bold">${a.horas}h</span>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-light text-secondary" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-light text-danger" title="Dar de baja"><i class="bi bi-x-circle"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', renderTabla);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
